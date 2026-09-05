@@ -42,6 +42,7 @@ export function useHanziWriter({
   const currentStrokeRef = useRef(0);
   const [isAnimating, setIsAnimating] = useState(false);
   const [strokeProgress, setStrokeProgress] = useState({ current: 0, total: 0 });
+  const [strokes, setStrokes] = useState<string[]>([]);
 
   const onCompleteRef = useRef(onComplete);
   const onErrorRef = useRef(onError);
@@ -78,6 +79,17 @@ export function useHanziWriter({
     },
     [size, speed]
   );
+
+  const loadStrokes = useCallback(async (target: string) => {
+    try {
+      const data = await HanziWriter.loadCharacterData(target);
+      if (data && data.strokes) {
+        setStrokes(data.strokes);
+      }
+    } catch {
+      setStrokes([]);
+    }
+  }, []);
 
   const animateFull = useCallback(
     (target: string) => {
@@ -142,11 +154,43 @@ export function useHanziWriter({
     []
   );
 
+  const goToStroke = useCallback(
+    (targetIndex: number) => {
+      const writer = writerRef.current;
+      if (!writer) return;
+
+      setIsAnimating(true);
+      writer.hideCharacter();
+
+      let strokeIndex = 0;
+      const animateToTarget = () => {
+        if (strokeIndex >= targetIndex) {
+          setIsAnimating(false);
+          currentStrokeRef.current = strokeIndex;
+          setStrokeProgress({ current: strokeIndex, total: getStrokeCount(writer) || strokes.length });
+          return;
+        }
+        writer.animateStroke(strokeIndex, {
+          onComplete: () => {
+            strokeIndex++;
+            animateToTarget();
+          },
+        });
+      };
+      animateToTarget();
+    },
+    [strokes.length]
+  );
+
   useEffect(() => {
     if (!char) {
       if (containerRef.current) containerRef.current.innerHTML = "";
+      setStrokes([]);
       return;
     }
+
+    loadStrokes(char);
+
     if (mode === "auto") {
       animateFull(char);
     } else {
@@ -160,7 +204,7 @@ export function useHanziWriter({
         setStrokeProgress({ current: 0, total: n });
       });
     }
-  }, [char, replayKey, mode, animateFull, createWriter, pollStrokeCount]);
+  }, [char, replayKey, mode, animateFull, createWriter, pollStrokeCount, loadStrokes]);
 
   const replay = useCallback(() => {
     if (!char) return;
@@ -183,8 +227,10 @@ export function useHanziWriter({
     containerRef,
     isAnimating,
     strokeProgress,
+    strokes,
     animateNextStroke,
     resetStrokes,
     replay,
+    goToStroke,
   };
 }

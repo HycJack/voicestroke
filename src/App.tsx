@@ -43,9 +43,11 @@ export default function App() {
     containerRef,
     isAnimating,
     strokeProgress,
+    strokes,
     animateNextStroke,
     resetStrokes,
     replay,
+    goToStroke,
   } = useHanziWriter({
     char: activeChar,
     size: CANVAS_SIZE,
@@ -128,6 +130,17 @@ export default function App() {
     }
   }, [resetStrokes, activeChar]);
 
+  const handleSelectStroke = useCallback(
+    (index: number) => {
+      goToStroke(index);
+      setStatus("playing");
+      if (activeChar) {
+        setStatusMessage(`跳转到「${activeChar}」第 ${index + 1} 笔`);
+      }
+    },
+    [goToStroke, activeChar]
+  );
+
   const handleClear = useCallback(() => {
     setRecognizedChars([]);
     setActiveChar(null);
@@ -166,10 +179,12 @@ export default function App() {
         isAnimating={isAnimating}
         mode={mode}
         strokeProgress={strokeProgress}
+        strokes={strokes}
         containerRef={containerRef}
         onReplay={handleReplay}
         onNextStroke={handleNextStroke}
         onResetStrokes={handleResetStrokes}
+        onSelectStroke={handleSelectStroke}
       />
 
       {/* char bar */}
