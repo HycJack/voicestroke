@@ -35,22 +35,24 @@ export function StrokeList({
             title={`第 ${index + 1} 笔`}
           >
             <svg viewBox="0 0 1024 1024" className="w-8 h-8">
-              {/* 渲染之前所有笔画作为背景 */}
-              {strokes.slice(0, index + 1).map((strokePath, strokeIdx) => (
-                <path
-                  key={strokeIdx}
-                  d={strokePath}
-                  fill={
-                    strokeIdx === index
-                      ? isCurrent
-                        ? "#2563eb"
-                        : isDone
-                        ? "#16a34a"
-                        : "#1e293b"
-                      : "#d1d5db"
-                  }
-                />
-              ))}
+              <g transform="translate(0, 1024) scale(1, -1)">
+                {/* 渲染之前所有笔画作为背景 */}
+                {strokes.slice(0, index + 1).map((strokePath, strokeIdx) => (
+                  <path
+                    key={strokeIdx}
+                    d={strokePath}
+                    fill={
+                      strokeIdx === index
+                        ? isCurrent
+                          ? "#2563eb"
+                          : isDone
+                          ? "#16a34a"
+                          : "#1e293b"
+                        : "#d1d5db"
+                    }
+                  />
+                ))}
+              </g>
             </svg>
 
             {/* 序号标签 */}
