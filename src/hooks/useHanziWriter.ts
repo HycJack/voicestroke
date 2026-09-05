@@ -159,25 +159,26 @@ export function useHanziWriter({
       const writer = writerRef.current;
       if (!writer) return;
 
-      setIsAnimating(true);
-      writer.hideCharacter();
+      const total = getStrokeCount(writer) || strokes.length;
 
-      let strokeIndex = 0;
-      const animateToTarget = () => {
-        if (strokeIndex >= targetIndex) {
-          setIsAnimating(false);
-          currentStrokeRef.current = strokeIndex;
-          setStrokeProgress({ current: strokeIndex, total: getStrokeCount(writer) || strokes.length });
-          return;
+      if (writer._renderState) {
+        const strokesState: Record<string, { opacity: number; displayPortion: number }> = {};
+        for (let i = 0; i < total; i++) {
+          strokesState[i] = {
+            opacity: i <= targetIndex ? 1 : 0,
+            displayPortion: i <= targetIndex ? 1 : 0,
+          };
         }
-        writer.animateStroke(strokeIndex, {
-          onComplete: () => {
-            strokeIndex++;
-            animateToTarget();
+        writer._renderState.updateState({
+          character: {
+            main: { strokes: strokesState },
+            outline: { strokes: strokesState },
           },
         });
-      };
-      animateToTarget();
+      }
+
+      currentStrokeRef.current = targetIndex;
+      setStrokeProgress({ current: targetIndex, total });
     },
     [strokes.length]
   );

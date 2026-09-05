@@ -15,7 +15,7 @@ export function StrokeList({
 
   return (
     <div className="flex flex-row md:flex-col gap-2 overflow-x-auto md:overflow-x-visible pb-2 md:pb-0">
-      {strokes.map((strokePath, index) => {
+      {strokes.map((_, index) => {
         const isCurrent = index === currentStrokeIndex;
         const isDone = index < currentStrokeIndex;
 
@@ -34,12 +34,23 @@ export function StrokeList({
             )}
             title={`第 ${index + 1} 笔`}
           >
-            <svg
-              viewBox="0 0 1024 1024"
-              className="w-8 h-8"
-              fill={isCurrent ? "#2563eb" : isDone ? "#16a34a" : "#1e293b"}
-            >
-              <path d={strokePath} />
+            <svg viewBox="0 0 1024 1024" className="w-8 h-8">
+              {/* 渲染之前所有笔画作为背景 */}
+              {strokes.slice(0, index + 1).map((strokePath, strokeIdx) => (
+                <path
+                  key={strokeIdx}
+                  d={strokePath}
+                  fill={
+                    strokeIdx === index
+                      ? isCurrent
+                        ? "#2563eb"
+                        : isDone
+                        ? "#16a34a"
+                        : "#1e293b"
+                      : "#d1d5db"
+                  }
+                />
+              ))}
             </svg>
 
             {/* 序号标签 */}
