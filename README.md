@@ -59,7 +59,7 @@ npm run preview
 
 项目配置了 GitHub Actions，推送到 `main` 分支后自动部署到 GitHub Pages。
 
-访问地址：https://hycjack.github.io/voicestroke.github.io/
+访问地址：https://hycjack.github.io/voicestroke/
 
 ## 使用方法
 
