@@ -16,7 +16,11 @@ const dotColor: Record<AppStatus, string> = {
 
 export function StatusBar({ status, message }: StatusBarProps) {
   return (
-    <div className="flex items-center justify-center gap-2 py-2 px-4 text-sm text-muted-foreground">
+    <div
+      role="status"
+      aria-live="polite"
+      className="flex items-center justify-center gap-2 py-2 px-4 text-sm text-muted-foreground"
+    >
       <span className={cn("w-2 h-2 rounded-full shrink-0", dotColor[status])} />
       <span className="truncate">{message}</span>
     </div>

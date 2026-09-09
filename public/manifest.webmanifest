@@ -1,0 +1,33 @@
+{
+  "name": "VoiceStroke 语音笔顺动画",
+  "short_name": "VoiceStroke",
+  "description": "语音输入汉字，查看笔顺动画演示与逐笔练习",
+  "id": "/voicestroke/",
+  "start_url": "/voicestroke/",
+  "scope": "/voicestroke/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f8fafc",
+  "theme_color": "#f8fafc",
+  "lang": "zh-CN",
+  "icons": [
+    {
+      "src": "/voicestroke/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/voicestroke/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/voicestroke/icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

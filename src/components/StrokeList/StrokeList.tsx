@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 
 interface StrokeListProps {
@@ -11,10 +12,25 @@ export function StrokeList({
   currentStrokeIndex,
   onSelectStroke,
 }: StrokeListProps) {
+  const activeRef = useRef<HTMLButtonElement | null>(null);
+
+  // 笔画较多时自动滚动到当前笔画，避免落在可视区外
+  useEffect(() => {
+    if (strokes.length === 0) return;
+    const reduced = window.matchMedia?.(
+      "(prefers-reduced-motion: reduce)"
+    ).matches;
+    activeRef.current?.scrollIntoView({
+      block: "nearest",
+      inline: "nearest",
+      behavior: reduced ? "auto" : "smooth",
+    });
+  }, [currentStrokeIndex, strokes.length]);
+
   if (strokes.length === 0) return null;
 
   return (
-    <div className="flex flex-row md:flex-col gap-2 overflow-x-auto md:overflow-x-visible pb-2 md:pb-0">
+    <div className="flex flex-row md:flex-col gap-2 overflow-x-auto md:overflow-x-hidden md:overflow-y-auto px-1 pt-1.5 pb-2 md:max-h-[min(60vh,26rem)]">
       {strokes.map((_, index) => {
         const isCurrent = index === currentStrokeIndex;
         const isDone = index < currentStrokeIndex;
@@ -22,6 +38,7 @@ export function StrokeList({
         return (
           <button
             key={index}
+            ref={index === currentStrokeIndex ? activeRef : undefined}
             onClick={() => onSelectStroke?.(index)}
             className={cn(
               "relative shrink-0 w-12 h-12 rounded-lg border-2 flex items-center justify-center transition-all",

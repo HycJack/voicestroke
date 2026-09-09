@@ -47,8 +47,11 @@ export function CharBar({
                   <button
                     onClick={() => !isUnsupported && onSelect(char)}
                     disabled={isUnsupported}
+                    aria-label={
+                      isUnsupported ? `${char} 不支持笔顺` : `查看 ${char} 的笔顺`
+                    }
                     className={cn(
-                      "w-12 h-12 rounded-xl text-xl font-semibold border-2 transition-all duration-150 flex items-center justify-center select-none",
+                      "w-12 h-12 rounded-xl text-xl font-semibold border-2 transition-all duration-150 flex items-center justify-center select-none font-kai",
                       isActive
                         ? "border-primary bg-primary-light text-primary shadow-sm shadow-primary/20 scale-105"
                         : isUnsupported
@@ -63,17 +66,23 @@ export function CharBar({
                   >
                     {char}
                   </button>
-                  {/* favorite star */}
+                  {/* favorite star — hover 设备上悬停才显示，触屏始终可见 */}
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
                       onToggleFavorite(char);
                     }}
+                    aria-label={isFav ? `取消收藏 ${char}` : `收藏 ${char}`}
+                    aria-pressed={isFav}
                     className={cn(
-                      "absolute -top-1 -right-1 w-7 h-7 rounded-full flex items-center justify-center text-xs transition-all",
-                      "opacity-0 group-hover:opacity-100 group-focus-within:opacity-100",
+                      "absolute -top-1 -right-1 rounded-full flex items-center justify-center text-sm transition-all",
+                      "w-7 h-7",
+                      /* 扩展热区到 ~44px，不改视觉尺寸 */
+                      "after:content-[''] after:absolute after:-inset-2",
+                      /* 触屏（无 hover）始终可见；鼠标设备悬停显示 */
+                      "opacity-100 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100 [@media(hover:hover)]:group-focus-within:opacity-100",
                       isFav
-                        ? "opacity-100 bg-amber-400 text-white"
+                        ? "opacity-100! bg-amber-400 text-white"
                         : "bg-card border border-border text-muted-foreground hover:text-amber-500"
                     )}
                     title={isFav ? "取消收藏" : "收藏"}
@@ -102,8 +111,9 @@ export function CharBar({
                   key={`fav-${char}`}
                   onClick={() => !isUnsupported && onSelect(char)}
                   disabled={isUnsupported}
+                  aria-label={`打开 ${char} 的笔顺`}
                   className={cn(
-                    "w-10 h-10 rounded-lg text-lg font-semibold border-2 transition-all duration-150 flex items-center justify-center select-none",
+                    "w-11 h-11 rounded-lg text-lg font-semibold border-2 transition-all duration-150 flex items-center justify-center select-none font-kai",
                     isActive
                       ? "border-amber-400 bg-amber-50 text-amber-700"
                       : isUnsupported

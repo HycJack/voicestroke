@@ -1,10 +1,12 @@
-import { useState, useCallback, useMemo, useEffect } from "react";
+import { useState, useCallback, useMemo, useEffect, useRef } from "react";
 import { CharBar } from "@/components/CharList/CharList";
 import { StrokeCanvas } from "@/components/StrokeCanvas/StrokeCanvas";
 import { StatusBar } from "@/components/StatusBar/StatusBar";
 import { BottomPanel } from "@/components/BottomPanel/BottomPanel";
 import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
 import { useHanziWriter, type PlayMode } from "@/hooks/useHanziWriter";
+import { strokeNameFromMedians } from "@/utils/strokeName";
+import { speakStrokeName, cancelStrokeVoice } from "@/utils/strokeSpeech";
 import { useCharSupportCache } from "@/hooks/useCharSupportCache";
 import { useFavorites } from "@/hooks/useFavorites";
 import { extractChineseChars } from "@/utils/charExtractor";
@@ -20,6 +22,33 @@ export default function App() {
   const [statusMessage, setStatusMessage] = useState("等待语音输入");
   const [speed, setSpeed] = useState(1);
   const [mode, setMode] = useState<PlayMode>("auto");
+  // 笔顺语音跟读开关（localStorage 持久化）
+  const [strokeVoiceOn, setStrokeVoiceOn] = useState(() => {
+    try {
+      return localStorage.getItem("vs-stroke-voice") !== "off";
+    } catch {
+      return true; // 隐私模式等存储不可用时默认开启
+    }
+  });
+
+  const toggleStrokeVoice = useCallback(() => {
+    setStrokeVoiceOn((v) => {
+      const nv = !v;
+      try {
+        localStorage.setItem("vs-stroke-voice", nv ? "on" : "off");
+      } catch {
+        /* ignore */
+      }
+      return nv;
+    });
+  }, []);
+
+  // 通过 ref 转发每笔回调，hook 拿到的是稳定引用（最新值在 render 中刷新）
+  const strokeVoiceHandlerRef = useRef<(i: number) => void>(() => {});
+  const handleStrokeStart = useCallback(
+    (i: number) => strokeVoiceHandlerRef.current(i),
+    []
+  );
 
   const speech = useSpeechRecognition();
   const { markUnsupported, unsupported } = useCharSupportCache();
@@ -42,8 +71,10 @@ export default function App() {
   const {
     containerRef,
     isAnimating,
+    isLoading,
     strokeProgress,
     strokes,
+    medians,
     animateNextStroke,
     resetStrokes,
     replay,
@@ -56,7 +87,27 @@ export default function App() {
     mode,
     onComplete: handleAnimationComplete,
     onError: handleAnimationError,
+    onStrokeStart: handleStrokeStart,
   });
+
+  // render 期间刷新：拿到最新的 medians/strokes/开关状态
+  strokeVoiceHandlerRef.current = (index: number) => {
+    if (!strokeVoiceOn) return;
+    const name = strokeNameFromMedians(medians[index], strokes[index]);
+    if (name) speakStrokeName(name);
+  };
+
+  // 切换字时停止残留播报
+  useEffect(() => {
+    cancelStrokeVoice();
+  }, [activeChar]);
+
+  // 当前笔画名（step 模式显示）
+  const currentStrokeName = useMemo(() => {
+    const i = strokeProgress.current;
+    if (!activeChar || i <= 0 || i > strokes.length) return null;
+    return strokeNameFromMedians(medians[i - 1], strokes[i - 1]) ?? null;
+  }, [activeChar, strokeProgress.current, strokes, medians]);
 
   const processTranscript = useCallback((text: string) => {
     const chars = extractChineseChars(text);
@@ -177,10 +228,12 @@ export default function App() {
       <StrokeCanvas
         activeChar={activeChar}
         isAnimating={isAnimating}
+        isLoading={isLoading}
         mode={mode}
         strokeProgress={strokeProgress}
         strokes={strokes}
         containerRef={containerRef}
+        currentStrokeName={currentStrokeName}
         onReplay={handleReplay}
         onNextStroke={handleNextStroke}
         onResetStrokes={handleResetStrokes}
@@ -208,6 +261,8 @@ export default function App() {
           interimTranscript={speech.interimTranscript}
           speed={speed}
           mode={mode}
+          strokeVoiceOn={strokeVoiceOn}
+          onToggleStrokeVoice={toggleStrokeVoice}
           onStartRecord={speech.start}
           onStopRecord={speech.stop}
           onManualSubmit={handleManualSubmit}

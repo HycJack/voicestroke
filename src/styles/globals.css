@@ -21,6 +21,9 @@
   --color-ring: #93c5fd;
   --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
     "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+  /* 语文教学惯例：汉字展示用楷体 */
+  --font-kai: "Kaiti SC", "STKaiti", "KaiTi", "楷体", "TW-Kai", "Noto Serif SC",
+    serif;
 }
 
 html, body, #root {
@@ -36,4 +39,22 @@ body {
   color: var(--color-foreground);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* Tailwind v4 中 button 默认 cursor: default — 恢复可点击指示 */
+button:not(:disabled),
+[role="button"]:not(:disabled) {
+  cursor: pointer;
+}
+
+/* 尊重系统减动效设置 */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

@@ -8,6 +8,8 @@ interface BottomPanelProps {
   interimTranscript: string;
   speed: number;
   mode: PlayMode;
+  strokeVoiceOn: boolean;
+  onToggleStrokeVoice: () => void;
   onStartRecord: () => void;
   onStopRecord: () => void;
   onManualSubmit: (text: string) => void;
@@ -21,6 +23,8 @@ export function BottomPanel({
   interimTranscript,
   speed,
   mode,
+  strokeVoiceOn,
+  onToggleStrokeVoice,
   onStartRecord,
   onStopRecord,
   onManualSubmit,
@@ -46,7 +50,7 @@ export function BottomPanel({
         </div>
       )}
 
-      {/* mode toggle + speed */}
+      {/* mode toggle + speed + 跟读 */}
       <div className="flex items-center justify-between mb-2.5">
         {/* mode toggle */}
         <div className="flex items-center rounded-lg border border-border overflow-hidden">
@@ -74,6 +78,52 @@ export function BottomPanel({
           </button>
         </div>
 
+        {/* 语音跟读开关 */}
+        <button
+          onClick={onToggleStrokeVoice}
+          aria-pressed={strokeVoiceOn}
+          aria-label={strokeVoiceOn ? "关闭笔顺语音跟读" : "开启笔顺语音跟读"}
+          title={strokeVoiceOn ? "关闭笔顺语音跟读" : "开启笔顺语音跟读"}
+          className={cn(
+            "shrink-0 w-10 h-10 rounded-full flex items-center justify-center border transition-all active:scale-95",
+            strokeVoiceOn
+              ? "bg-primary-light text-primary border-primary/50"
+              : "bg-card text-muted-foreground border-border"
+          )}
+        >
+          {strokeVoiceOn ? (
+            <svg
+              className="w-4.5 h-4.5"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M11 5 6 9H2v6h4l5 4z" />
+              <path d="M15.5 8.5a5 5 0 0 1 0 7" />
+              <path d="M19 5a9 9 0 0 1 0 14" />
+            </svg>
+          ) : (
+            <svg
+              className="w-4.5 h-4.5"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M11 5 6 9H2v6h4l5 4z" />
+              <line x1="23" y1="9" x2="17" y2="15" />
+              <line x1="17" y1="9" x2="23" y2="15" />
+            </svg>
+          )}
+        </button>
+
         {/* speed */}
         <label className="text-xs text-muted-foreground flex items-center gap-2">
           速度
@@ -83,8 +133,9 @@ export function BottomPanel({
             max={3}
             step={0.25}
             value={speed}
+            aria-label="动画速度"
             onChange={(e) => onSpeedChange(Number(e.target.value))}
-            className="w-20 accent-primary h-1"
+            className="w-24 accent-primary h-6 cursor-pointer"
           />
           <span className="text-xs font-semibold text-primary w-8 text-right">
             {speed}x
@@ -98,6 +149,13 @@ export function BottomPanel({
         <button
           onClick={isRecording ? onStopRecord : onStartRecord}
           disabled={!isSupported}
+          aria-label={
+            !isSupported
+              ? "浏览器不支持语音识别"
+              : isRecording
+              ? "停止录音"
+              : "开始录音"
+          }
           className={cn(
             "shrink-0 w-11 h-11 md:w-12 md:h-12 rounded-full flex items-center justify-center text-white text-lg transition-all active:scale-90",
             isRecording
@@ -139,6 +197,7 @@ export function BottomPanel({
             type="text"
             inputMode="text"
             value={manualText}
+            aria-label="手动输入汉字"
             onChange={(e) => setManualText(e.target.value)}
             placeholder="手动输入中文汉字..."
             className="flex-1 h-11 md:h-10 px-3 rounded-lg border border-border bg-background text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-ring/40 focus:border-primary transition-all"

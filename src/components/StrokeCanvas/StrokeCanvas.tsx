@@ -5,9 +5,11 @@ import { StrokeList } from "@/components/StrokeList/StrokeList";
 interface StrokeCanvasProps {
   activeChar: string | null;
   isAnimating: boolean;
+  isLoading: boolean;
   mode: PlayMode;
   strokeProgress: { current: number; total: number };
   strokes: string[];
+  currentStrokeName?: string | null;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   containerRef: React.RefObject<any>;
   onReplay?: () => void;
@@ -80,9 +82,11 @@ function RiceGrid() {
 export function StrokeCanvas({
   activeChar,
   isAnimating,
+  isLoading,
   mode,
   strokeProgress,
   strokes,
+  currentStrokeName,
   containerRef,
   onReplay,
   onNextStroke,
@@ -95,13 +99,14 @@ export function StrokeCanvas({
     strokeProgress.current >= strokeProgress.total;
 
   return (
-    <div className="flex flex-col md:flex-row items-center md:items-start justify-center flex-1 min-h-0 px-4 pt-2 pb-2 gap-4">
+    <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain">
+      <div className="flex flex-col md:flex-row items-center md:items-start justify-center min-h-full px-4 pt-2 pb-2 gap-4">
       {/* main canvas area */}
       <div className="flex flex-col items-center">
         {/* active char display */}
         <div className="h-12 md:h-14 flex items-center justify-center">
           {activeChar ? (
-            <span className="text-4xl md:text-5xl font-bold tracking-tight text-foreground select-none">
+            <span className="font-kai text-5xl md:text-6xl font-bold tracking-tight text-foreground select-none">
               {activeChar}
             </span>
           ) : (
@@ -126,7 +131,12 @@ export function StrokeCanvas({
           </div>
 
           {activeChar ? (
-            <div ref={containerRef} className="relative z-10 w-full h-full" />
+            <div
+              ref={containerRef}
+              role="img"
+              aria-label={`「${activeChar}」笔顺演示`}
+              className="relative z-10 w-full h-full"
+            />
           ) : (
             <div className="relative z-10 flex flex-col items-center gap-2 text-muted-foreground/40">
               <svg
@@ -139,6 +149,12 @@ export function StrokeCanvas({
                 <path d="M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z" />
               </svg>
               <span className="text-xs md:text-sm">点击下方汉字查看笔顺</span>
+            </div>
+          )}
+
+          {isLoading && (
+            <div className="absolute inset-0 z-20 flex items-center justify-center bg-card/60">
+              <div className="w-8 h-8 rounded-full border-2 border-primary border-t-transparent animate-spin" />
             </div>
           )}
 
@@ -170,6 +186,7 @@ export function StrokeCanvas({
                 {strokeProgress.total > 0 && (
                   <span className="text-sm text-muted-foreground mr-1">
                     {strokeProgress.current}/{strokeProgress.total} 笔
+                    {currentStrokeName ? ` · ${currentStrokeName}` : ""}
                   </span>
                 )}
 
@@ -224,6 +241,7 @@ export function StrokeCanvas({
           />
         </div>
       )}
+      </div>
     </div>
   );
 }
